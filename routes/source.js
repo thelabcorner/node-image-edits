@@ -29,7 +29,7 @@ module.exports = async function (fastify, opts) {
       name,
       version,
       commit: process.env.GIT_COMMIT_SHA || undefined,
-      source: repository?.url || process.env.SOURCE_CODE_URL || 'https://github.com/your-org/node-image-editing',
+      source: repository?.url || process.env.SOURCE_CODE_URL || 'https://github.com/thatalexay/node-image-editing',
       license
     }
   })
