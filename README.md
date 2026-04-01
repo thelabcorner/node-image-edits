@@ -63,6 +63,16 @@ Server runs on [http://localhost:3001](http://localhost:3001) (configured in `.e
 pnpm start
 ```
 
+### Docker
+
+Use `.env.docker` as the Docker env template and provide your Cloudflare tunnel token there. You can create a named tunnel in Cloudflare Zero Trust and copy the `cloudflared tunnel run` token into `CLOUDFLARE_TUNNEL_TOKEN`.
+
+```bash
+cp .env.docker .env
+docker build -t node-image-edits .
+docker run --env-file .env -p 3001:3001 node-image-edits
+```
+
 ### Download Models Manually (Optional)
 
 Only needed if you want to self-host the background removal assets instead of using the packaged files in `node_modules/@imgly/background-removal-node/dist`. If install download was skipped, you can also run this manually.
