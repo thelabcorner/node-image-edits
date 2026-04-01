@@ -65,7 +65,7 @@ pnpm start
 
 ### Docker
 
-Use the Docker env template and provide your Cloudflare tunnel token there. You can create a named tunnel in Cloudflare Zero Trust and copy the `cloudflared tunnel run` token into `CLOUDFLARE_TUNNEL_TOKEN`.
+Use `.env.docker` as the Docker env template and provide your Cloudflare tunnel token there. You can create a named tunnel in Cloudflare Zero Trust and copy the `cloudflared tunnel run` token into `CLOUDFLARE_TUNNEL_TOKEN`.
 
 ```bash
 cp .env.docker .env
