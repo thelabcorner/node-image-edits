@@ -183,8 +183,8 @@ Remove image background using AI.
 
 **Request:** `multipart/form-data`
 - `file` (required): Image file (`jpg`, `png`, `webp`, `heic`)
-- `output` (optional): Output type - `image` (cutout on filled background), `mask` (grayscale mask) (default: `image`)
-- `format` (optional): Output format - `jpg` (default: `jpg`)
+- `output` (optional): Output type - `image` (cutout with transparent background), `mask` (grayscale mask) (default: `image`)
+- `format` (optional): Output format - `png` (default, preserves transparency), `jpg` (flattens to white background), `webp`
 - `feather` (optional): Edge feathering amount (0-10) for smoother edges
 - `threshold` (optional): Mask threshold cutoff (0-255) for binary mask
 
@@ -192,25 +192,32 @@ Remove image background using AI.
 
 **Examples:**
 ```bash
-# Basic background removal
+# Basic background removal (returns PNG with transparent background)
 curl -X POST http://localhost:3001/v1/remove-bg \
   -H "X-Api-Key: test-api-key-123" \
   -F "file=@input.jpg" \
-  --output output.jpg
+  --output output.png
 
 # With feathering for smooth edges
 curl -X POST http://localhost:3001/v1/remove-bg \
   -H "X-Api-Key: test-api-key-123" \
   -F "file=@input.jpg" \
   -F "feather=3" \
-  --output output-smooth.jpg
+  --output output-smooth.png
+
+# Flatten onto white background as JPEG
+curl -X POST http://localhost:3001/v1/remove-bg \
+  -H "X-Api-Key: test-api-key-123" \
+  -F "file=@input.jpg" \
+  -F "format=jpg" \
+  --output output-white-bg.jpg
 
 # Get mask only
 curl -X POST http://localhost:3001/v1/remove-bg \
   -H "X-Api-Key: test-api-key-123" \
   -F "file=@input.jpg" \
   -F "output=mask" \
-  --output mask.jpg
+  --output mask.png
 ```
 
 **Note:** First request may take 5-10 seconds as AI models load into memory. Subsequent requests are faster (2-5 seconds).

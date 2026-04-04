@@ -224,9 +224,11 @@ class ImageService {
       // JPEG doesn't support transparency, flatten with white background
       pipeline = pipeline.flatten({ background: '#ffffff' }).jpeg({ quality: 80 })
     } else if (outputFormat === 'webp') {
+      // WebP supports transparency natively
       pipeline = pipeline.webp({ quality: 80 })
     } else {
-      pipeline = pipeline.flatten({ background: '#ffffff' }).jpeg({ quality: 80 })
+      // PNG preserves alpha channel — the correct default for background removal
+      pipeline = pipeline.png()
     }
 
     const buffer = await pipeline.toBuffer()

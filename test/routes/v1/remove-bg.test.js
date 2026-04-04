@@ -68,11 +68,12 @@ test('POST /v1/remove-bg removes background from image', async (t) => {
 
   // Save output for visual inspection
   const outputBuffer = Buffer.from(res.rawPayload)
-  saveTestOutput(outputBuffer, 'remove-bg-default', 'jpg')
+  saveTestOutput(outputBuffer, 'remove-bg-default', 'png')
 
-  // Verify output is JPEG format
+  // Default output is now PNG with alpha channel (transparent background)
   const metadata = await sharp(outputBuffer).metadata()
-  assert.strictEqual(metadata.format, 'jpeg')
+  assert.strictEqual(metadata.format, 'png')
+  assert.strictEqual(metadata.channels, 4, 'PNG should have alpha channel for transparency')
 })
 
 test('POST /v1/remove-bg with output=mask returns grayscale mask', async (t) => {
@@ -97,11 +98,11 @@ test('POST /v1/remove-bg with output=mask returns grayscale mask', async (t) => 
 
   // Save output for visual inspection
   const outputBuffer = Buffer.from(res.rawPayload)
-  saveTestOutput(outputBuffer, 'remove-bg-mask', 'jpg')
+  saveTestOutput(outputBuffer, 'remove-bg-mask', 'png')
 
-  // Verify output is JPEG format
+  // Mask output is PNG (grayscale)
   const metadata = await sharp(outputBuffer).metadata()
-  assert.strictEqual(metadata.format, 'jpeg')
+  assert.strictEqual(metadata.format, 'png')
 })
 
 test('POST /v1/remove-bg with feathering', async (t) => {
@@ -126,11 +127,11 @@ test('POST /v1/remove-bg with feathering', async (t) => {
 
   // Save output for visual inspection
   const outputBuffer = Buffer.from(res.rawPayload)
-  saveTestOutput(outputBuffer, 'remove-bg-feather-5', 'jpg')
+  saveTestOutput(outputBuffer, 'remove-bg-feather-5', 'png')
 
-  // Verify output is JPEG format
+  // Feathered output is PNG with alpha channel
   const metadata = await sharp(outputBuffer).metadata()
-  assert.strictEqual(metadata.format, 'jpeg')
+  assert.strictEqual(metadata.format, 'png')
 })
 
 test('POST /v1/remove-bg with threshold on mask', async (t) => {
@@ -156,10 +157,10 @@ test('POST /v1/remove-bg with threshold on mask', async (t) => {
 
   // Save output for visual inspection
   const outputBuffer = Buffer.from(res.rawPayload)
-  saveTestOutput(outputBuffer, 'remove-bg-mask-threshold-128', 'jpg')
+  saveTestOutput(outputBuffer, 'remove-bg-mask-threshold-128', 'png')
 
   const metadata = await sharp(outputBuffer).metadata()
-  assert.strictEqual(metadata.format, 'jpeg')
+  assert.strictEqual(metadata.format, 'png')
 })
 
 test('POST /v1/remove-bg with JPG format specified', async (t) => {
@@ -189,9 +190,40 @@ test('POST /v1/remove-bg with JPG format specified', async (t) => {
 
   const metadata = await sharp(outputBuffer).metadata()
   assert.strictEqual(metadata.format, 'jpeg')
+  assert.strictEqual(metadata.channels, 3, 'JPEG output should not have alpha channel (flattened to white)')
 })
 
-test('POST /v1/remove-bg outputs JPEG without alpha channel', async (t) => {
+test('POST /v1/remove-bg with PNG format specified returns transparent PNG', async (t) => {
+  const app = await build(t)
+
+  const testImage = getRandomTestImage()
+  const form = new FormData()
+  form.append('file', testImage.buffer, { filename: testImage.filename })
+  form.append('format', 'png')
+
+  const res = await app.inject({
+    method: 'POST',
+    url: '/v1/remove-bg',
+    headers: {
+      ...form.getHeaders(),
+      'x-api-key': 'test-api-key-123'
+    },
+    payload: form
+  })
+
+  assert.strictEqual(res.statusCode, 200)
+  assert.strictEqual(res.headers['content-type'], 'image/png')
+
+  // Save output for visual inspection
+  const outputBuffer = Buffer.from(res.rawPayload)
+  saveTestOutput(outputBuffer, 'remove-bg-png-explicit', 'png')
+
+  const metadata = await sharp(outputBuffer).metadata()
+  assert.strictEqual(metadata.format, 'png')
+  assert.strictEqual(metadata.channels, 4, 'PNG output should have alpha channel for transparency')
+})
+
+test('POST /v1/remove-bg default output is PNG with alpha channel', async (t) => {
   const app = await build(t)
 
   const testImage = getRandomTestImage()
@@ -209,15 +241,15 @@ test('POST /v1/remove-bg outputs JPEG without alpha channel', async (t) => {
   })
 
   assert.strictEqual(res.statusCode, 200)
-  assert.strictEqual(res.headers['content-type'], 'image/jpeg')
+  assert.strictEqual(res.headers['content-type'], 'image/png')
 
   // Save output for visual inspection
   const outputBuffer = Buffer.from(res.rawPayload)
-  saveTestOutput(outputBuffer, 'remove-bg-jpeg-no-alpha', 'jpg')
+  saveTestOutput(outputBuffer, 'remove-bg-default-alpha', 'png')
 
   const metadata = await sharp(outputBuffer).metadata()
-  assert.strictEqual(metadata.format, 'jpeg')
-  assert.strictEqual(metadata.channels, 3, 'JPEG should not have alpha channel')
+  assert.strictEqual(metadata.format, 'png')
+  assert.strictEqual(metadata.channels, 4, 'PNG output should have alpha channel for transparent background')
 })
 
 test('POST /v1/remove-bg with invalid feather value returns 400', async (t) => {

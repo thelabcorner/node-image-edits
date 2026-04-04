@@ -1,14 +1,17 @@
 #!/bin/sh
 set -eu
 
+# Ensure the Cloudflare tunnel token is present
 if [ -z "${CLOUDFLARE_TUNNEL_TOKEN:-}" ]; then
   echo "CLOUDFLARE_TUNNEL_TOKEN is required" >&2
   exit 1
 fi
 
+# Start the application in background
 pnpm start &
 app_pid=$!
 
+# Start cloudflared tunnel (uses token injected via env)
 cloudflared tunnel --no-autoupdate run --token "$CLOUDFLARE_TUNNEL_TOKEN" &
 tunnel_pid=$!
 

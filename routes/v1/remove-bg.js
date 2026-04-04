@@ -53,7 +53,7 @@ module.exports = async function (fastify, opts) {
       }
 
       // Validate format
-      const validFormats = ['jpg']
+      const validFormats = ['jpg', 'png', 'webp']
       if (format && !validFormats.includes(format)) {
         throw fastify.httpErrors.createError(400, `Invalid format. Must be one of: ${validFormats.join(', ')}`)
       }
@@ -76,15 +76,17 @@ module.exports = async function (fastify, opts) {
       }
 
       // Process the image
+      const resolvedFormat = format || 'png'
       const result = await imageService.removeBackground(data, {
         output,
-        format: format || 'jpg',
+        format: resolvedFormat,
         feather,
         threshold
       })
 
-      // Set appropriate content type
-      reply.type('image/jpeg')
+      // Set appropriate content type based on actual output format
+      const contentTypeMap = { jpg: 'image/jpeg', png: 'image/png', webp: 'image/webp' }
+      reply.type(contentTypeMap[resolvedFormat] || 'image/png')
 
       return result.buffer
     } catch (error) {
